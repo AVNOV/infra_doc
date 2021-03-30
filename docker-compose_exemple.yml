@@ -1,0 +1,45 @@
+version: '2.4'
+services:
+  grafana:
+    restart: always
+    image: grafana/grafana:latest
+    container_name: grafana
+    mem_limit: 1024M
+    ports:
+      - "3002:3000"
+    links:
+      - prometheus:prometheus
+      - grafanarenderer:grafanarenderer
+    volumes:
+      - ${ROOT}/Dockers/grafana/data:/var/lib/grafana
+      - ${ROOT}/Dockers/grafana/logs:/var/log/grafana
+      - ${ROOT}/Dockers/grafana/plugins:/var/lib/grafana/plugins
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-clock-panel,grafana-simple-json-datasource,grafana-image-renderer
+      - GF_SMTP_USER=${GRAFANA_SMTP_USER}
+      - GF_SMTP_PASSWORD=${GRAFANA_SMTP_PASSWORD}
+      - GF_SMTP_FROM_ADDRESS=${GRAFANA_SMTP_USER}
+      - GF_SMTP_FROM_NAME=${GRAFANA_SMTP_NAME}
+      - GF_SMTP_HOST=${GRAFANA_SMTP_HOST}
+      - GF_SMTP_ENABLED=${GRAFANA_SMTP_ENABLED}
+      - GF_SERVER_ROOT_URL=${GRAFANA_URL}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_RENDERING_SERVER_URL=${GRAFANA_RENDERER_URL}
+      - GF_RENDERING_CALLBACK_URL=${GRAFANA_RENDERER_CALLBACK_URL}
+  grafanarenderer:
+    restart: always
+    image: grafana/grafana-image-renderer:latest
+    container_name: grafanarenderer
+    mem_limit: 512M
+    ports:
+      - "4445:8081"
+  prometheus:
+    image: prom/prometheus:latest
+    restart: always
+    container_name: prometheus
+    mem_limit: 512M
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ${ROOT}/Dockers/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ${ROOT}/Dockers/prometheus:/prometheus
